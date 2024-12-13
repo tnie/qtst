@@ -18,8 +18,6 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_groupBoxRecv_toggled(bool arg1);
-
     void on_btnSwitch_clicked(bool checked);
 
 private:
@@ -28,7 +26,8 @@ private:
     QTimer *timer;
     void initInterface();
     bool bind();
+    bool recv();
     bool join();
-    void send();
+    bool send();
 };
 #endif // MAINWINDOW_H
