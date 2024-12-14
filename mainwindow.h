@@ -18,7 +18,7 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_btnSwitch_clicked(bool checked);
+    void on_btnSwitch_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

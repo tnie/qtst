@@ -4,6 +4,24 @@
 #include <QNetworkInterface>
 #include <QDateTime>
 #include <QTimer>
+#include <QMessageBox>
+
+namespace {
+QString addrType(const QHostAddress& addr)
+{
+    if(addr.isBroadcast())
+        return "广播地址";
+    if(addr.isMulticast())
+        return "多播地址";
+    if(addr.isLoopback())
+        return "回环地址";
+    if(addr.isGlobal())
+        return "广域网或局域网地址";
+    if(addr.isNull())
+        return "无效地址";
+    return "";
+}
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -15,6 +33,16 @@ MainWindow::MainWindow(QWidget *parent)
     initInterface();
     QString bindTip = "绑定本地地址无法收到多播报文；绑定多播地址只能接收多播报文；推荐绑定ANY";
     ui->bindAddr->setStatusTip(bindTip);
+    ui->labelAddrType->clear();
+    connect(ui->dstAddr, &QLineEdit::textEdited, this, [=](const QString& text){
+        bool isMulticast = QHostAddress(text).isMulticast();
+        ui->groupBoxMulti->setVisible(isMulticast);
+        ui->iFaceSend->setEnabled(isMulticast);
+        ui->cbInterface4Send->setEnabled(isMulticast);
+        ui->cbMulticastLoopbackOption->setEnabled(isMulticast);
+        QString type = addrType(QHostAddress(text));
+        ui->labelAddrType->setText(type);
+    });
 }
 
 MainWindow::~MainWindow()
@@ -24,7 +52,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::initInterface()
 {
-    for (auto iface : QNetworkInterface::allInterfaces())
+    for (auto & iface : QNetworkInterface::allInterfaces())
     {
         if(iface.isValid())
         {
@@ -38,7 +66,7 @@ bool MainWindow::bind()
 {
     Q_ASSERT(nullptr != socket);
     socket->abort();
-    connect(socket, &QUdpSocket::stateChanged, [=](QAbstractSocket::SocketState socketState){
+    connect(socket, &QUdpSocket::stateChanged, socket, [=](QAbstractSocket::SocketState socketState){
         ui->statusbar->showMessage(socket->errorString());
     });
     const QHostAddress addr(ui->bindAddr->text());
@@ -62,6 +90,12 @@ bool MainWindow::bind()
         qWarning()<<"bind failed?" << socket->error() << socket->errorString();
         return false;
     }
+    connect(ui->cbMulticastLoopbackOption, &QCheckBox::stateChanged, socket, [=](int state){
+        // socketOption() 在 bind() 之后才有意义
+        socket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, state);
+        qDebug() << "*MulticastLoopbackOption=" << socket->socketOption(QAbstractSocket::MulticastLoopbackOption);
+    });
+
     return true;
 }
 
@@ -75,7 +109,7 @@ bool MainWindow::recv()
     }
     Q_ASSERT(nullptr != socket);
     // 在 socket 发送数据之后，disconnect 后重新关联槽函数似乎无法收到报文 #todo#
-    handle = QObject::connect(socket, &QUdpSocket::readyRead, [=](){
+    handle = QObject::connect(socket, &QUdpSocket::readyRead, this, [=](){
         QByteArray ba;
         QHostAddress addr;
         quint16 port;
@@ -101,7 +135,7 @@ bool MainWindow::join()
     {
         QString text = ui->iFaceJoin->currentText();
         QNetworkInterface iface = QNetworkInterface::interfaceFromName( text);
-        // #todo# 追加，前序加租未撤销
+        // #todo# 追加，前序加组未撤销
         ok = socket->joinMulticastGroup(multicast, iface);
     }
     else
@@ -132,15 +166,11 @@ bool MainWindow::send()
     {
         QString text = ui->iFaceSend->currentText();
         QNetworkInterface iface = QNetworkInterface::interfaceFromName( text);
-        // #todo# 无法撤销，除非重建 socket
+        // 无法撤销，除非重建 socket
         socket->setMulticastInterface(iface);
     }
     Q_ASSERT(nullptr != timer);
-    handle = QObject::connect(timer, &QTimer::timeout, [=](){
-        // socketOption() 在 bind() 之后才有意义
-        const bool enable = ui->cbMulticastLoopbackOption->isChecked();
-        socket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, enable);
-        qDebug() << "*MulticastLoopbackOption=" << socket->socketOption(QAbstractSocket::MulticastLoopbackOption);
+    handle = QObject::connect(timer, &QTimer::timeout, this, [=](){
         const QString data = QDateTime::currentDateTime().toString();
         const QByteArray datagram= data.toUtf8();
         const QHostAddress address(ui->dstAddr->text());
@@ -161,25 +191,34 @@ bool MainWindow::send()
     return handle;
 }
 
-void MainWindow::on_btnSwitch_clicked(bool checked)
+void MainWindow::on_btnSwitch_toggled(bool checked)
 {
     if(checked)
     {
-        ui->btnSwitch->setText("复位(&T)");
+        if(nullptr == socket)
+            socket = new QUdpSocket(this);
+        if(nullptr == timer)
+            timer = new QTimer(this);
         if(bind())
         {
+            ui->btnSwitch->setText("复位(&T)");
             recv();
             send();
+        }
+        else
+        {
+            QMessageBox::warning(this, this->windowTitle(), "绑定失败");
+            ui->btnSwitch->setChecked(false);
         }
     }
     else
     {
         ui->btnSwitch->setText("启动(&B)");
-        socket->abort();
-        // #todo# 会误杀 stateChanged 槽函数
         socket->disconnect();
-        timer->stop();
-        timer->disconnect();
+        // 重新创建 QUdpSocket 对象，因为有些设置无法清除（多播发送接口），有些设置不容易清除（已加入的组）
+        socket->deleteLater();
+        socket = nullptr;
+        timer->deleteLater();
+        timer = nullptr;
     }
-
 }
