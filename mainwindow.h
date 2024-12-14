@@ -27,7 +27,9 @@ private:
     void initInterface();
     bool bind();
     bool recv();
+    bool stopRecv();
     bool join();
-    bool send();
+    void send();
+    void stopSend();
 };
 #endif // MAINWINDOW_H

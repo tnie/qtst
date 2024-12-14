@@ -27,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , socket(new QUdpSocket(this))
-    , timer(new QTimer(this))
+    , timer(nullptr)
 {
     ui->setupUi(this);
     initInterface();
@@ -42,6 +42,13 @@ MainWindow::MainWindow(QWidget *parent)
         ui->cbMulticastLoopbackOption->setEnabled(isMulticast);
         QString type = addrType(QHostAddress(text));
         ui->labelAddrType->setText(type);
+    });
+    connect(ui->groupBoxSend, &QGroupBox::toggled, this, [=](bool on){
+        on ? send() : stopSend();
+    });
+    connect(ui->sliderFrequency, &QSlider::valueChanged, this, [this](int seconds){
+        if(timer)
+            timer->start(1000* seconds);
     });
 }
 
@@ -94,6 +101,11 @@ bool MainWindow::bind()
         // socketOption() 在 bind() 之后才有意义
         socket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, state);
         qDebug() << "*MulticastLoopbackOption=" << socket->socketOption(QAbstractSocket::MulticastLoopbackOption);
+    });
+    connect(ui->iFaceSend, &QComboBox::currentTextChanged, socket, [=](const QString& text){
+        QNetworkInterface iface = QNetworkInterface::interfaceFromName( text);
+        // 无法撤销，除非重建 socket
+        socket->setMulticastInterface(iface);
     });
 
     return true;
@@ -150,17 +162,19 @@ bool MainWindow::join()
     return true;
 }
 
-bool MainWindow::send()
+void MainWindow::stopSend()
 {
-    static QMetaObject::Connection handle;
-    if(!ui->groupBoxSend->isChecked())
+    if(nullptr != timer)
     {
-        QObject::disconnect(handle);
-        Q_ASSERT(false == handle);
-        if(timer != nullptr)
-            timer->stop();
-        return true;
+        timer->deleteLater();
+        timer = nullptr;
     }
+}
+
+void MainWindow::send()
+{
+    if(nullptr != timer)
+        return;
     Q_ASSERT(nullptr != socket);
     if(ui->cbInterface4Send->isChecked())
     {
@@ -169,8 +183,8 @@ bool MainWindow::send()
         // 无法撤销，除非重建 socket
         socket->setMulticastInterface(iface);
     }
-    Q_ASSERT(nullptr != timer);
-    handle = QObject::connect(timer, &QTimer::timeout, this, [=](){
+    timer = new QTimer(this);
+    QObject::connect(timer, &QTimer::timeout, this, [=](){
         const QString data = QDateTime::currentDateTime().toString();
         const QByteArray datagram= data.toUtf8();
         const QHostAddress address(ui->dstAddr->text());
@@ -188,7 +202,6 @@ bool MainWindow::send()
     });
     const int seconds = ui->sliderFrequency->value();
     timer->start(1000* seconds);
-    return handle;
 }
 
 void MainWindow::on_btnSwitch_toggled(bool checked)
@@ -197,8 +210,6 @@ void MainWindow::on_btnSwitch_toggled(bool checked)
     {
         if(nullptr == socket)
             socket = new QUdpSocket(this);
-        if(nullptr == timer)
-            timer = new QTimer(this);
         if(bind())
         {
             ui->btnSwitch->setText("复位(&T)");
@@ -218,7 +229,6 @@ void MainWindow::on_btnSwitch_toggled(bool checked)
         // 重新创建 QUdpSocket 对象，因为有些设置无法清除（多播发送接口），有些设置不容易清除（已加入的组）
         socket->deleteLater();
         socket = nullptr;
-        timer->deleteLater();
-        timer = nullptr;
+        stopSend();
     }
 }
