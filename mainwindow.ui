@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>665</height>
+    <height>735</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -78,7 +78,7 @@
             <number>65535</number>
            </property>
            <property name="value">
-            <number>21778</number>
+            <number>21502</number>
            </property>
            <property name="displayIntegerBase">
             <number>10</number>
@@ -187,62 +187,6 @@
          <bool>true</bool>
         </property>
         <layout class="QGridLayout" name="gridLayout_4">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>地址(&amp;A)：</string>
-           </property>
-           <property name="buddy">
-            <cstring>dstAddr</cstring>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="dstAddr">
-           <property name="text">
-            <string>224.112.212.11</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QLabel" name="labelAddrType">
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>端口(&amp;P)：</string>
-           </property>
-           <property name="buddy">
-            <cstring>dstPort</cstring>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QSpinBox" name="dstPort">
-           <property name="suffix">
-            <string/>
-           </property>
-           <property name="prefix">
-            <string/>
-           </property>
-           <property name="minimum">
-            <number>10000</number>
-           </property>
-           <property name="maximum">
-            <number>65535</number>
-           </property>
-           <property name="value">
-            <number>21778</number>
-           </property>
-           <property name="displayIntegerBase">
-            <number>10</number>
-           </property>
-          </widget>
-         </item>
          <item row="2" column="0">
           <widget class="QLabel" name="label_10">
            <property name="text">
@@ -253,13 +197,10 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="0" colspan="3">
-          <widget class="QPlainTextEdit" name="plainTextEditSend">
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-           <property name="maximumBlockCount">
-            <number>100</number>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="dstAddr">
+           <property name="text">
+            <string>224.8.50.5</string>
            </property>
           </widget>
          </item>
@@ -294,6 +235,33 @@
            </property>
            <property name="tickInterval">
             <number>1</number>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QLabel" name="labelAddrType">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>地址(&amp;A)：</string>
+           </property>
+           <property name="buddy">
+            <cstring>dstAddr</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0" colspan="3">
+          <widget class="QPlainTextEdit" name="plainTextEditSend">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+           <property name="maximumBlockCount">
+            <number>100</number>
            </property>
           </widget>
          </item>
@@ -341,9 +309,6 @@
             </item>
             <item row="1" column="0" colspan="2">
              <widget class="QCheckBox" name="cbMulticastLoopbackOption">
-              <property name="statusTip">
-               <string>多播时使用</string>
-              </property>
               <property name="text">
                <string>MulticastLoopbackOption</string>
               </property>
@@ -353,6 +318,45 @@
              </widget>
             </item>
            </layout>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QSpinBox" name="dstPort">
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="prefix">
+            <string/>
+           </property>
+           <property name="minimum">
+            <number>10000</number>
+           </property>
+           <property name="maximum">
+            <number>65535</number>
+           </property>
+           <property name="value">
+            <number>21502</number>
+           </property>
+           <property name="displayIntegerBase">
+            <number>10</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>端口(&amp;P)：</string>
+           </property>
+           <property name="buddy">
+            <cstring>dstPort</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="2">
+          <widget class="QPushButton" name="pushButton_3">
+           <property name="text">
+            <string>清空(&amp;C)</string>
+           </property>
           </widget>
          </item>
         </layout>
@@ -395,7 +399,7 @@
             <item row="0" column="1">
              <widget class="QLineEdit" name="multiAddr">
               <property name="text">
-               <string>224.112.212.11</string>
+               <string>224.8.50.5</string>
               </property>
              </widget>
             </item>
@@ -520,7 +524,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>27</height>
     </rect>
    </property>
   </widget>
@@ -535,8 +539,8 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>386</x>
-     <y>75</y>
+     <x>384</x>
+     <y>102</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
@@ -551,12 +555,12 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>386</x>
-     <y>102</y>
+     <x>384</x>
+     <y>138</y>
     </hint>
     <hint type="destinationlabel">
-     <x>286</x>
-     <y>103</y>
+     <x>301</x>
+     <y>140</y>
     </hint>
    </hints>
   </connection>
@@ -567,12 +571,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>769</x>
-     <y>340</y>
+     <x>765</x>
+     <y>450</y>
     </hint>
     <hint type="destinationlabel">
-     <x>692</x>
-     <y>341</y>
+     <x>682</x>
+     <y>451</y>
     </hint>
    </hints>
   </connection>
@@ -583,12 +587,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>376</x>
-     <y>405</y>
+     <x>372</x>
+     <y>500</y>
     </hint>
     <hint type="destinationlabel">
-     <x>299</x>
-     <y>406</y>
+     <x>289</x>
+     <y>500</y>
     </hint>
    </hints>
   </connection>
@@ -599,8 +603,8 @@
    <slot>clear()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>778</x>
-     <y>79</y>
+     <x>776</x>
+     <y>104</y>
     </hint>
     <hint type="destinationlabel">
      <x>577</x>
@@ -615,8 +619,8 @@
    <slot>clear()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>778</x>
-     <y>381</y>
+     <x>776</x>
+     <y>500</y>
     </hint>
     <hint type="destinationlabel">
      <x>591</x>
@@ -631,8 +635,8 @@
    <slot>setHidden(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>386</x>
-     <y>102</y>
+     <x>384</x>
+     <y>138</y>
     </hint>
     <hint type="destinationlabel">
      <x>789</x>
@@ -648,7 +652,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>789</x>
-     <y>634</y>
+     <y>697</y>
     </hint>
     <hint type="destinationlabel">
      <x>288</x>
@@ -663,8 +667,8 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>386</x>
-     <y>102</y>
+     <x>384</x>
+     <y>138</y>
     </hint>
     <hint type="destinationlabel">
      <x>789</x>
@@ -679,12 +683,12 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>748</x>
-     <y>619</y>
+     <x>789</x>
+     <y>697</y>
     </hint>
     <hint type="destinationlabel">
-     <x>341</x>
-     <y>396</y>
+     <x>372</x>
+     <y>500</y>
     </hint>
    </hints>
   </connection>
@@ -695,12 +699,28 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>760</x>
-     <y>625</y>
+     <x>789</x>
+     <y>697</y>
     </hint>
     <hint type="destinationlabel">
-     <x>596</x>
-     <y>310</y>
+     <x>777</x>
+     <y>463</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_3</sender>
+   <signal>clicked()</signal>
+   <receiver>plainTextEditSend</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>342</x>
+     <y>556</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>334</x>
+     <y>578</y>
     </hint>
    </hints>
   </connection>

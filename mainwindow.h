@@ -26,8 +26,8 @@ private:
     QTimer *timer;
     void initInterface();
     bool bind();
-    bool recv();
-    bool stopRecv();
+    void recv();
+    void stopRecv();
     bool join();
     void send();
     void stopSend();
