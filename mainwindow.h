@@ -9,6 +9,7 @@ QT_END_NAMESPACE
 
 class QUdpSocket;
 class QTimer;
+class QNetworkDatagram;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -31,5 +32,6 @@ private:
     bool join();
     void send();
     void stopSend();
+    void processTheDatagram(const QNetworkDatagram&);
 };
 #endif // MAINWINDOW_H

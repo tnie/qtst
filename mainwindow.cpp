@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QTimer>
 #include <QMessageBox>
+#include <QNetworkDatagram>
 
 namespace {
 QString addrType(const QHostAddress& addr)
@@ -118,26 +119,27 @@ bool MainWindow::bind()
 
 void MainWindow::recv()
 {
-    if(!ui->groupBoxRecv->isChecked())
-        return ;
-    if(ui->groupBoxRecv->isHidden())
-        return ;
     Q_ASSERT(nullptr != socket);
-    // 在 socket 发送数据之后，disconnect 后重新关联槽函数似乎无法收到报文 #todo#
-    auto handle = QObject::connect(socket, &QUdpSocket::readyRead, this,
-                                   [=](){
-        QByteArray ba;
-        QHostAddress addr;
-        quint16 port;
+    while(socket->hasPendingDatagrams())
+    {
+        socket->receiveDatagram(); // skip
+    }
+    // emit readyRead() 信号依赖 receiveDatagram() 重置标志位
+    QObject::connect(socket, &QUdpSocket::readyRead, this, [=](){
+        if(!socket->hasPendingDatagrams())
+        {
+            QNetworkDatagram datagram = socket->receiveDatagram(); // workaround for bad checksum
+            QString msg("** readyRead emitted, but nothing to get :(");
+            QString warning = QString(R"(<font color="red">%1</font>)").arg(msg);
+            ui->plainTextEditRecv->appendHtml(warning);
+            processTheDatagram(datagram);
+        }
         while(socket->hasPendingDatagrams()){
-            ba.resize(socket->pendingDatagramSize());
-            socket->readDatagram(ba.data(), ba.size(), &addr, &port);
-            qDebug() << addr << port << "\n>>" << QString::fromUtf8(ba);
-            ui->plainTextEditRecv->appendPlainText(addr.toString() + ':' + QString::number(port));
-            ui->plainTextEditRecv->appendPlainText(">> " + QString::fromUtf8(ba));
+            QNetworkDatagram datagram = socket->receiveDatagram();
+            processTheDatagram(datagram);
         }
     });
-    Q_ASSERT(handle);
+    socket->receiveDatagram(0); // workaround for connect() again
     join();
 }
 
@@ -167,6 +169,8 @@ bool MainWindow::join()
     {
         QString text = ui->iFaceJoin->currentText();
         QNetworkInterface iface = QNetworkInterface::interfaceFromName( text);
+        // 重复加相同的组会报错；但离组再加又会干扰接收
+//        socket->leaveMulticastGroup(multicast, iface);
         // #todo# 追加，前序加组未撤销
         ok = socket->joinMulticastGroup(multicast, iface);
     }
@@ -189,6 +193,19 @@ void MainWindow::stopSend()
         timer->deleteLater();
         timer = nullptr;
     }
+}
+
+void MainWindow::processTheDatagram(const QNetworkDatagram & datagram)
+{
+    QString text;
+    QTextStream stream(&text);
+    stream << datagram.senderAddress().toString() << ":" << datagram.senderPort() << " => "
+          << datagram.destinationAddress().toString() << ":" << datagram.destinationPort();
+    ui->plainTextEditRecv->appendPlainText(text);
+    text = QString::fromUtf8(datagram.data());
+    if(text.isEmpty())
+        text = QString::fromUtf8(datagram.data().toHex());
+    ui->plainTextEditRecv->appendPlainText(">> " + text);
 }
 
 void MainWindow::send()
