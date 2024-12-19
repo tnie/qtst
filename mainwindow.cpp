@@ -22,6 +22,28 @@ QString addrType(const QHostAddress& addr)
         return "无效地址";
     return "";
 }
+QString stateString(QAbstractSocket::SocketState state)
+{
+    switch (state) {
+    case QAbstractSocket::UnconnectedState:
+        return "UnconnectedState";
+    case QAbstractSocket::HostLookupState:
+        return "HostLookupState";
+    case QAbstractSocket::ConnectingState:
+        return "ConnectingState";
+    case QAbstractSocket::ConnectedState:
+        return "ConnectedState";
+    case QAbstractSocket::BoundState:
+        return "BoundState";
+    case QAbstractSocket::ListeningState:
+        return "ListeningState";
+    case QAbstractSocket::ClosingState:
+        return "ClosingState";
+    default:
+        break;
+    }
+    return "Unknown";
+}
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -78,7 +100,12 @@ bool MainWindow::bind()
     Q_ASSERT(nullptr == socket);
     socket = new QUdpSocket(this);
     connect(socket, &QUdpSocket::stateChanged, socket, [=](QAbstractSocket::SocketState socketState){
-        ui->statusbar->showMessage(socket->errorString());
+        ui->plainTextEditLog->appendPlainText("=> " + stateString(socketState));
+    });
+    connect(socket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error), socket,
+            [=](QAbstractSocket::SocketError socketError){
+        qWarning() << socketError << socket->errorString();
+        ui->plainTextEditLog->appendPlainText(socket->errorString());
     });
     const QHostAddress addr(ui->bindAddr->text());
     const QHostAddress any(QHostAddress::AnyIPv4);
@@ -98,7 +125,7 @@ bool MainWindow::bind()
     socket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, 0);
     if(!socket->bind(bindAddr, bindPort, mode))
     {
-        qWarning()<<"bind failed?" << socket->error() << socket->errorString();
+        qWarning()<<"bind failed!" << socket->error() << socket->errorString();
         socket->deleteLater();
         socket = nullptr;
         return false;
@@ -106,7 +133,9 @@ bool MainWindow::bind()
     connect(ui->cbMulticastLoopbackOption, &QCheckBox::stateChanged, socket, [=](int state){
         // socketOption() 在 bind() 之后才有意义
         socket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, state);
-        qDebug() << "*MulticastLoopbackOption=" << socket->socketOption(QAbstractSocket::MulticastLoopbackOption);
+        QVariant option = socket->socketOption(QAbstractSocket::MulticastLoopbackOption);
+        qDebug() << "*MulticastLoopbackOption=" << option;
+        ui->plainTextEditLog->appendPlainText(QString("*MulticastLoopbackOption=%1").arg(option.toInt()));
     });
     connect(ui->iFaceSend, &QComboBox::currentTextChanged, socket, [=](const QString& text){
         QNetworkInterface iface = QNetworkInterface::interfaceFromName( text);
@@ -243,7 +272,12 @@ void MainWindow::send()
         }
         else
         {
-            qDebug() << "<<"  << data;
+            QString text;
+            QTextStream stream(&text);
+            stream << address.toString() << ":" << port << " <= "
+                      << socket->localAddress().toString() << ":" << socket->localPort();
+            qDebug() << text << "\n<<"  << data;
+            ui->plainTextEditSend->appendPlainText(text);
             ui->plainTextEditSend->appendPlainText("<< " + data);
         }
     });
