@@ -6,45 +6,10 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QNetworkDatagram>
+#include <QProcess>
 
-namespace {
-QString addrType(const QHostAddress& addr)
-{
-    if(addr.isBroadcast())
-        return "广播地址";
-    if(addr.isMulticast())
-        return "多播地址";
-    if(addr.isLoopback())
-        return "回环地址";
-    if(addr.isGlobal())
-        return "广域网或局域网地址";
-    if(addr.isNull())
-        return "无效地址";
-    return "";
-}
-QString stateString(QAbstractSocket::SocketState state)
-{
-    switch (state) {
-    case QAbstractSocket::UnconnectedState:
-        return "UnconnectedState";
-    case QAbstractSocket::HostLookupState:
-        return "HostLookupState";
-    case QAbstractSocket::ConnectingState:
-        return "ConnectingState";
-    case QAbstractSocket::ConnectedState:
-        return "ConnectedState";
-    case QAbstractSocket::BoundState:
-        return "BoundState";
-    case QAbstractSocket::ListeningState:
-        return "ListeningState";
-    case QAbstractSocket::ClosingState:
-        return "ClosingState";
-    default:
-        break;
-    }
-    return "Unknown";
-}
-}
+static QString addrType(const QHostAddress& addr);
+static QString stateString(QAbstractSocket::SocketState state);
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -56,6 +21,13 @@ MainWindow::MainWindow(QWidget *parent)
     initInterface();
     QString bindTip = "绑定本地地址无法收到多播报文；绑定多播地址只能接收多播报文；推荐绑定ANY";
     ui->bindAddr->setStatusTip(bindTip);
+    {
+        ui->menu_F->addAction(ui->actNewDemo);
+        ui->menu_F->addAction(ui->actNewTab);
+        ui->menu_F->addSeparator();
+        ui->menu_F->addAction(ui->actQuit);
+    }
+    this->setWindowIcon(QIcon(":/img/Oo.png"));
     ui->labelAddrType->clear();
     connect(ui->dstAddr, &QLineEdit::textEdited, this, [=](const QString& text){
         bool isMulticast = QHostAddress(text).isMulticast();
@@ -259,7 +231,7 @@ void MainWindow::send()
     Q_ASSERT(nullptr == timer);
     timer = new QTimer(this);
     QObject::connect(timer, &QTimer::timeout, this, [=](){
-        const QString data = QDateTime::currentDateTime().toString();
+        const QString data = QTime::currentTime().toString();
         const QByteArray datagram= data.toUtf8();
         const QHostAddress address(ui->dstAddr->text());
         const quint16 port = ui->dstPort->value();
@@ -312,4 +284,58 @@ void MainWindow::on_btnSwitch_toggled(bool checked)
         socket = nullptr;
         stopSend();
     }
+}
+
+void MainWindow::on_actNewDemo_triggered()
+{
+    QProcess * process = new QProcess(this);
+    process->start(qGuiApp->applicationFilePath());
+}
+
+void MainWindow::on_actQuit_triggered()
+{
+    qGuiApp->quit();
+}
+
+void MainWindow::on_actNewTab_triggered()
+{
+    QMessageBox::information(this, this->windowTitle(), "开发中");
+}
+
+QString addrType(const QHostAddress& addr)
+{
+    if(addr.isBroadcast())
+        return "广播地址";
+    if(addr.isMulticast())
+        return "多播地址";
+    if(addr.isLoopback())
+        return "回环地址";
+    if(addr.isGlobal())
+        return "广域网或局域网地址";
+    if(addr.isNull())
+        return "无效地址";
+    return "";
+}
+
+QString stateString(QAbstractSocket::SocketState state)
+{
+    switch (state) {
+    case QAbstractSocket::UnconnectedState:
+        return "UnconnectedState";
+    case QAbstractSocket::HostLookupState:
+        return "HostLookupState";
+    case QAbstractSocket::ConnectingState:
+        return "ConnectingState";
+    case QAbstractSocket::ConnectedState:
+        return "ConnectedState";
+    case QAbstractSocket::BoundState:
+        return "BoundState";
+    case QAbstractSocket::ListeningState:
+        return "ListeningState";
+    case QAbstractSocket::ClosingState:
+        return "ClosingState";
+    default:
+        break;
+    }
+    return "Unknown";
 }

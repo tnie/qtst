@@ -520,8 +520,41 @@
      <height>27</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu_F">
+    <property name="title">
+     <string>文件(&amp;F)</string>
+    </property>
+   </widget>
+   <addaction name="menu_F"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actNewTab">
+   <property name="text">
+    <string>打开标签(&amp;T)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+T</string>
+   </property>
+  </action>
+  <action name="actNewDemo">
+   <property name="text">
+    <string>打开实例(&amp;N)</string>
+   </property>
+   <property name="toolTip">
+    <string>打开实例</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+N</string>
+   </property>
+  </action>
+  <action name="actQuit">
+   <property name="text">
+    <string>关闭窗口(&amp;C)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Q</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections>

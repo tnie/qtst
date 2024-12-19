@@ -21,6 +21,12 @@ public:
 private slots:
     void on_btnSwitch_toggled(bool checked);
 
+    void on_actNewDemo_triggered();
+
+    void on_actQuit_triggered();
+
+    void on_actNewTab_triggered();
+
 private:
     Ui::MainWindow *ui;
     QUdpSocket * socket;
