@@ -87,11 +87,11 @@ bool MainWindow::bind()
     QAbstractSocket::BindMode mode = QAbstractSocket::DefaultForPlatform;
     {
         if(ui->cbShareAddress->isChecked())
-            mode &= QAbstractSocket::ShareAddress;
+            mode |= QAbstractSocket::ShareAddress;
         if(ui->cbDontShareAddress->isChecked())
-            mode &= QAbstractSocket::DontShareAddress;
+            mode |= QAbstractSocket::DontShareAddress;
         if(ui->cbReuseAddressHint->isChecked())
-            mode &= QAbstractSocket::ReuseAddressHint;
+            mode |= QAbstractSocket::ReuseAddressHint;
     }
     // 在 bind() 之前的 setSocketOption() 没有意义
     socket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, 0);
