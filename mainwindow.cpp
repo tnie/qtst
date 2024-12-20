@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
         ui->menu_F->addAction(ui->actNewTab);
         ui->menu_F->addSeparator();
         ui->menu_F->addAction(ui->actQuit);
+        ui->menu_H->addAction(ui->actAbout);
     }
     this->setWindowIcon(QIcon(":/img/Oo.png"));
     ui->labelAddrType->clear();
@@ -372,4 +373,16 @@ QString stateString(QAbstractSocket::SocketState state)
         break;
     }
     return "Unknown";
+}
+
+#ifdef __HAS_VERSION_
+#include "version.hpp"
+#endif
+void MainWindow::on_actAbout_triggered()
+{
+    QString about(" by 208");
+#ifdef __HAS_VERSION_
+    about.prepend(utility::version()).prepend("version ");
+#endif
+    QMessageBox::information(this, this->windowTitle(), about);
 }

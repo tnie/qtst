@@ -27,6 +27,11 @@ SOURCES += \
 HEADERS += \
     mainwindow.h
 
+exists( version.hpp ) {
+    HEADERS += version.hpp
+    DEFINES += "__HAS_VERSION_"
+}
+
 FORMS += \
     mainwindow.ui
 

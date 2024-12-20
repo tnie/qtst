@@ -525,7 +525,13 @@
      <string>文件(&amp;F)</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menu_H">
+    <property name="title">
+     <string>帮助(&amp;H)</string>
+    </property>
+   </widget>
    <addaction name="menu_F"/>
+   <addaction name="menu_H"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actNewTab">
@@ -553,6 +559,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+Q</string>
+   </property>
+  </action>
+  <action name="actAbout">
+   <property name="text">
+    <string>关于(&amp;A)</string>
    </property>
   </action>
  </widget>

@@ -27,6 +27,8 @@ private slots:
 
     void on_actNewTab_triggered();
 
+    void on_actAbout_triggered();
+
 private:
     Ui::MainWindow *ui;
     QUdpSocket * socket;
