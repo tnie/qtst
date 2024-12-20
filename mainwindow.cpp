@@ -72,7 +72,8 @@ bool MainWindow::bind()
     Q_ASSERT(nullptr == socket);
     socket = new QUdpSocket(this);
     connect(socket, &QUdpSocket::stateChanged, socket, [=](QAbstractSocket::SocketState socketState){
-        ui->plainTextEditLog->appendPlainText("=> " + stateString(socketState));
+        QString text = QString("0x%1").arg(reinterpret_cast<intptr_t>(socket), 0, 16);
+        ui->plainTextEditLog->appendPlainText(text + " => " + stateString(socketState));
     });
     connect(socket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error), socket,
             [=](QAbstractSocket::SocketError socketError){
@@ -123,7 +124,7 @@ void MainWindow::recv()
     Q_ASSERT(nullptr != socket);
     while(socket->hasPendingDatagrams())
     {
-        socket->receiveDatagram(); // skip
+        socket->receiveDatagram(0); // discard
     }
     // emit readyRead() 信号依赖 receiveDatagram() 重置标志位
     QObject::connect(socket, &QUdpSocket::readyRead, this, [=](){
@@ -140,7 +141,7 @@ void MainWindow::recv()
             processTheDatagram(datagram);
         }
     });
-    socket->receiveDatagram(0); // workaround for connect() again
+    socket->receiveDatagram(); // workaround for connect() again
     join();
 }
 
