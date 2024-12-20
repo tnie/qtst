@@ -203,6 +203,8 @@ bool MainWindow::join()
     if(!ok)
     {
         qWarning()<<"join multicast group failed!" << socket->error() << socket->errorString();
+        // 加组失败时，并未触发 error(..) signal
+        ui->plainTextEditLog->appendPlainText("joinMulticastGroup()" + socket->errorString());
         return false;
     }
     return true;
@@ -331,10 +333,21 @@ QString addrType(const QHostAddress& addr)
         return "多播地址";
     if(addr.isLoopback())
         return "回环地址";
-    if(addr.isGlobal())
-        return "广域网或局域网地址";
     if(addr.isNull())
         return "无效地址";
+    for (auto & iface : QNetworkInterface::allInterfaces())
+    {
+        if(QNetworkInterface::IsUp & iface.flags())
+        {
+            for( auto & entry :iface.addressEntries())
+            {
+                if(entry.broadcast() == addr)
+                    return "局域网广播地址";
+            }
+        }
+    }
+    if(addr.isGlobal())
+        return "广域网或局域网地址";
     return "";
 }
 
