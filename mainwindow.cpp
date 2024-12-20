@@ -59,10 +59,29 @@ void MainWindow::initInterface()
 {
     for (auto & iface : QNetworkInterface::allInterfaces())
     {
-        if(iface.isValid())
+        if(QNetworkInterface::IsUp & iface.flags())
         {
-            ui->iFaceJoin->addItem(iface.name());
-            ui->iFaceSend->addItem(iface.name());
+            QString ipV4addr;
+            for( auto & entry :iface.addressEntries())
+            {
+                QHostAddress addr = entry.ip();
+                if(QAbstractSocket::IPv4Protocol == addr.protocol())
+                {
+                    if(!ipV4addr.isEmpty())
+                        ipV4addr += ',';
+                    // 一个网卡绑定多个 ip
+                    ipV4addr += addr.toString();
+                }
+            }
+            QString text = iface.name();
+            if(!ipV4addr.isEmpty())
+                text += QString("(%1)").arg(ipV4addr);
+            ui->iFaceJoin->addItem(text, iface.name());
+            if(QNetworkInterface::CanMulticast & iface.flags())
+            {
+                // 多播的发送网卡
+                ui->iFaceSend->addItem(text, iface.name());
+            }
         }
     }
 }
@@ -110,7 +129,8 @@ bool MainWindow::bind()
         qDebug() << "*MulticastLoopbackOption=" << option;
         ui->plainTextEditLog->appendPlainText(QString("*MulticastLoopbackOption=%1").arg(option.toInt()));
     });
-    connect(ui->iFaceSend, &QComboBox::currentTextChanged, socket, [=](const QString& text){
+    connect(ui->iFaceSend, &QComboBox::currentTextChanged, socket, [=](const QString& ){
+        QString text = ui->iFaceSend->currentData().toString();
         QNetworkInterface iface = QNetworkInterface::interfaceFromName( text);
         // 无法撤销，除非重建 socket
         socket->setMulticastInterface(iface);
@@ -169,7 +189,7 @@ bool MainWindow::join()
     const QHostAddress multicast(ui->multiAddr->text());
     if(ui->cbInterface->isChecked())
     {
-        QString text = ui->iFaceJoin->currentText();
+        QString text = ui->iFaceJoin->currentData().toString();
         QNetworkInterface iface = QNetworkInterface::interfaceFromName( text);
         // 重复加相同的组会报错；但离组再加又会干扰接收
 //        socket->leaveMulticastGroup(multicast, iface);
@@ -217,7 +237,7 @@ void MainWindow::send()
     {
         if(QAbstractSocket::BoundState == socket->state())
         {
-            QString text = ui->iFaceSend->currentText();
+            QString text = ui->iFaceSend->currentData().toString();
             QNetworkInterface iface = QNetworkInterface::interfaceFromName( text);
             // 无法撤销（只能更改），除非重建 socket
             socket->setMulticastInterface(iface);
