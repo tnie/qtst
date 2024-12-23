@@ -74,3 +74,4 @@ Thumbs.db
 build
 version.sh
 version.hpp
+/CMakeLists.txt.user
