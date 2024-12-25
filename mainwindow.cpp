@@ -95,7 +95,7 @@ bool MainWindow::bind()
         QString text = QString("0x%1").arg(reinterpret_cast<intptr_t>(socket), 0, 16);
         ui->plainTextEditLog->appendPlainText(text + " => " + stateString(socketState));
     });
-    connect(socket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error), socket,
+    connect(socket, &QAbstractSocket::errorOccurred, socket,
             [=](QAbstractSocket::SocketError socketError){
         qWarning() << socketError << socket->errorString();
         ui->plainTextEditLog->appendPlainText(socket->errorString());
@@ -313,7 +313,8 @@ void MainWindow::on_btnSwitch_toggled(bool checked)
 void MainWindow::on_actNewDemo_triggered()
 {
     QProcess * process = new QProcess(this);
-    process->start(qGuiApp->applicationFilePath());
+    QStringList arguments;
+    process->start(qGuiApp->applicationFilePath(), arguments);
 }
 
 void MainWindow::on_actQuit_triggered()
