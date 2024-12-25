@@ -53,6 +53,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    // 先停止收发再结束软件，避免崩溃
+    if(ui->btnSwitch->isChecked())
+        ui->btnSwitch->setChecked(false);
     delete ui;
 }
 
