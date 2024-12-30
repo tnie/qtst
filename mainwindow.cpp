@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QNetworkDatagram>
 #include <QProcess>
+#include "idatagram.h"
 
 static QString addrType(const QHostAddress& addr);
 static QString stateString(QAbstractSocket::SocketState state);
@@ -231,6 +232,37 @@ void MainWindow::processTheDatagram(const QNetworkDatagram & datagram)
     if(text.isEmpty())
         text = QString::fromUtf8(datagram.data().toHex());
     ui->plainTextEditRecv->appendPlainText(">> " + text);
+    dispatch1(datagram);
+    dispatch2(datagram);
+}
+
+void MainWindow::dispatch1(QNetworkDatagram datagram)
+{
+    static StDatagram d1;
+    if(d1.verify(datagram))
+    {
+        d1.setDatagram(datagram);
+        qDebug() << d1.getTime();
+    }
+}
+
+void MainWindow::dispatch2(QNetworkDatagram datagram)
+{
+    static QVector<StDatagram*> dd;
+    for (int i = 0; i < dd.size(); ++i) {
+        if(dd[i]->verify(datagram))
+        {
+            dd[i]->setDatagram(datagram);
+            return;
+        }
+    }
+    StDatagram *d1 = new StDatagram;
+    if(d1->verify(datagram))
+    {
+        d1->setDatagram(datagram);
+        d1->setExpectedSrc(datagram.senderAddress());
+        dd.push_back(d1);
+    }
 }
 
 void MainWindow::send()
@@ -255,7 +287,7 @@ void MainWindow::send()
     Q_ASSERT(nullptr == timer);
     timer = new QTimer(this);
     QObject::connect(timer, &QTimer::timeout, this, [=](){
-        const QString data = QTime::currentTime().toString();
+        const QString data = "Hello " + QTime::currentTime().toString();
         const QByteArray datagram= data.toUtf8();
         const QHostAddress address(ui->dstAddr->text());
         const quint16 port = ui->dstPort->value();

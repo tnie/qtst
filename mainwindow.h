@@ -41,5 +41,8 @@ private:
     void send();
     void stopSend();
     void processTheDatagram(const QNetworkDatagram&);
+    void dispatch1(QNetworkDatagram);
+    void dispatch2(QNetworkDatagram);
+
 };
 #endif // MAINWINDOW_H
