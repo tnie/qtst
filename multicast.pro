@@ -23,11 +23,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     idatagram.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    navprotocol.cpp
 
 HEADERS += \
     idatagram.h \
-    mainwindow.h
+    mainwindow.h \
+    navprotocol.h \
+    student.h
 
 exists( version.hpp ) {
     HEADERS += version.hpp

@@ -35,4 +35,15 @@ private:
     QHostAddress expectedSrc;
 };
 
+class StudentDatagram : public IDatagram
+{
+    // IDatagram interface
+public:
+    bool verify(QNetworkDatagram) const override
+    {
+        return true;
+    }
+    void print();
+};
+
 #endif // IDATAGRAM_H

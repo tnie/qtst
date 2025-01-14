@@ -8,9 +8,27 @@
 #include <QNetworkDatagram>
 #include <QProcess>
 #include "idatagram.h"
+#include "student.h"
 
 static QString addrType(const QHostAddress& addr);
 static QString stateString(QAbstractSocket::SocketState state);
+static QByteArray studentInfo()
+{
+    Student student;
+
+    // 初始化原始数据
+    student.setNum(123456789);
+    student.setGender(true);
+    student.setMath(98.8);
+    student.setEng(92.5);
+    student.setTimestamp(QDateTime::currentSecsSinceEpoch());
+
+    // 序列化
+    QByteArray bytes = student.serialize();
+    // 打印
+    qDebug() << bytes.toHex(' ');
+    return bytes;
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -234,6 +252,7 @@ void MainWindow::processTheDatagram(const QNetworkDatagram & datagram)
     ui->plainTextEditRecv->appendPlainText(">> " + text);
     dispatch1(datagram);
     dispatch2(datagram);
+    dispatch3(datagram);
 }
 
 void MainWindow::dispatch1(QNetworkDatagram datagram)
@@ -265,6 +284,16 @@ void MainWindow::dispatch2(QNetworkDatagram datagram)
     }
 }
 
+void MainWindow::dispatch3(QNetworkDatagram datagram)
+{
+    static StudentDatagram d1;
+    if(d1.verify(datagram))
+    {
+        d1.setDatagram(datagram);
+        d1.print();
+    }
+}
+
 void MainWindow::send()
 {
     Q_ASSERT(nullptr != socket);
@@ -288,7 +317,8 @@ void MainWindow::send()
     timer = new QTimer(this);
     QObject::connect(timer, &QTimer::timeout, this, [=](){
         const QString data = "Hello " + QTime::currentTime().toString();
-        const QByteArray datagram= data.toUtf8();
+        // const QByteArray datagram= data.toUtf8();
+        const QByteArray datagram = studentInfo();
         const QHostAddress address(ui->dstAddr->text());
         const quint16 port = ui->dstPort->value();
         Q_ASSERT(QAbstractSocket::ConnectedState != socket->state());
@@ -303,7 +333,7 @@ void MainWindow::send()
             QString text;
             QTextStream stream(&text);
             stream << address.toString() << ":" << port << " <= "
-                      << socket->localAddress().toString() << ":" << socket->localPort();
+                   << socket->localAddress().toString() << ":" << socket->localPort();
             qDebug() << text << "\n<<"  << data;
             ui->plainTextEditSend->appendPlainText(text);
             ui->plainTextEditSend->appendPlainText("<< " + data);

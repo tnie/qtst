@@ -66,3 +66,17 @@ void StDatagram::setExpectedSrc(const QHostAddress &value)
 {
     expectedSrc = value;
 }
+
+#include "student.h"
+
+void StudentDatagram::print()
+{
+    Student student;
+    // 反序列化
+    student.deserialize(datagram.data());
+    // 打印
+    qint64 ts = student.timestamp();
+    QTime time = QDateTime::fromSecsSinceEpoch(ts).time();
+    qDebug() << student.getNum() << student.isFemale() << student.getMath()
+             << student.getEng() << time;
+}
