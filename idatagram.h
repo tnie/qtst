@@ -8,6 +8,7 @@ public:
     IDatagram();
     virtual ~IDatagram();
     virtual bool verify(QNetworkDatagram) const = 0;
+    virtual QString toString() const {}
 
     QNetworkDatagram getDatagram() const;
     void setDatagram(QNetworkDatagram);
@@ -27,6 +28,7 @@ public:
     // IDatagram interface
 public:
     bool verify(QNetworkDatagram) const override;
+    virtual QString toString() const override;
 
     QHostAddress getExpectedSrc() const;
     void setExpectedSrc(const QHostAddress &value);
@@ -35,15 +37,12 @@ private:
     QHostAddress expectedSrc;
 };
 
-class StudentDatagram : public IDatagram
+class PersonDatagram : public IDatagram
 {
     // IDatagram interface
 public:
-    bool verify(QNetworkDatagram) const override
-    {
-        return true;
-    }
-    void print();
+    bool verify(QNetworkDatagram) const override;
+    virtual QString toString() const override;
 };
 
 #endif // IDATAGRAM_H

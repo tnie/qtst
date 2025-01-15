@@ -57,6 +57,11 @@ bool StDatagram::verify(QNetworkDatagram datagram) const
     return false;
 }
 
+QString StDatagram::toString() const
+{
+    return QString::fromUtf8(datagram.data());
+}
+
 QHostAddress StDatagram::getExpectedSrc() const
 {
     return expectedSrc;
@@ -67,16 +72,32 @@ void StDatagram::setExpectedSrc(const QHostAddress &value)
     expectedSrc = value;
 }
 
-#include "student.h"
+#include "example.h"
 
-void StudentDatagram::print()
+QString PersonDatagram::toString() const
 {
-    Student student;
-    // 反序列化
-    student.deserialize(datagram.data());
-    // 打印
-    qint64 ts = student.timestamp();
-    QTime time = QDateTime::fromSecsSinceEpoch(ts).time();
-    qDebug() << student.getNum() << student.isFemale() << student.getMath()
-             << student.getEng() << time;
+    Person person;
+    QByteArray bytes = datagram.data();
+    person.deserialize(bytes);
+    int age = person.getAge();
+    if(age < 20) {
+        Student student;
+        student.deserialize(datagram.data());
+        return student.toString();
+    }
+    else {
+        Worker worker;
+        worker.deserialize(datagram.data());
+        return worker.toString();
+    }
+    return person.toString();
+}
+
+bool PersonDatagram::verify(QNetworkDatagram datagram) const
+{
+    Person person;
+    QByteArray bytes = datagram.data();
+    person.deserialize(bytes);
+    int age = person.getAge();
+    return (age >=0 && age <= 120);
 }

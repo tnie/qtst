@@ -24,6 +24,23 @@ private:
     QString name_;  // 方便调试
 };
 
+/* NOTE int64_t 和 qint64 不是相同的类型 */
+template <> inline void qToBigEndian<int64_t>(int64_t src, void *dest) {
+    qToBigEndian<qint64>(src, dest);
+}
+
+template <> inline void qToBigEndian<uint64_t>(uint64_t src, void *dest) {
+    qToBigEndian<quint64>(src, dest);
+}
+
+template <> inline int64_t qFromBigEndian<int64_t>(const void *src) {
+    return qFromBigEndian<qint64>(src);
+}
+
+template <> inline uint64_t qFromBigEndian<uint64_t>(const void *src) {
+    return qFromBigEndian<quint64>(src);
+}
+
 template<typename T>
 class FieldImpl: public Field
 {
@@ -121,8 +138,8 @@ template void NavProtocol::addField< int16_t>(QString, double);
 template void NavProtocol::addField<uint16_t>(QString, double);
 template void NavProtocol::addField< int32_t>(QString, double);
 template void NavProtocol::addField<uint32_t>(QString, double);
-//template void NavProtocol::addField< int64_t>(QString, double);
-//template void NavProtocol::addField<uint64_t>(QString, double);
+template void NavProtocol::addField< int64_t>(QString, double);
+template void NavProtocol::addField<uint64_t>(QString, double);
 
 //template void NavProtocol::addField<  qint8>(QString, double);
 //template void NavProtocol::addField< quint8>(QString, double);

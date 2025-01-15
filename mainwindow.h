@@ -41,8 +41,10 @@ private:
     void send();
     void stopSend();
     void processTheDatagram(const QNetworkDatagram&);
-    void dispatch1(QNetworkDatagram);
-    void dispatch2(QNetworkDatagram);
-    void dispatch3(QNetworkDatagram);
+    void dispatch(QNetworkDatagram);
+    void send(QByteArray payload, QString tips);
+    void sayHello();
+    void sayMore();
+
 };
 #endif // MAINWINDOW_H
