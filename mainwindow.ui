@@ -207,19 +207,19 @@
          <item row="2" column="1" colspan="2">
           <widget class="QSlider" name="sliderFrequency">
            <property name="minimum">
-            <number>1</number>
+            <number>0</number>
            </property>
            <property name="maximum">
-            <number>10</number>
+            <number>9</number>
            </property>
            <property name="pageStep">
             <number>1</number>
            </property>
            <property name="value">
-            <number>3</number>
+            <number>4</number>
            </property>
            <property name="sliderPosition">
-            <number>3</number>
+            <number>4</number>
            </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>

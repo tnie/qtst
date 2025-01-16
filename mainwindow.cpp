@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QNetworkDatagram>
 #include <QProcess>
+#include <QtMath>
 #include "idatagram.h"
 #include "example.h"
 
@@ -47,9 +48,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->groupBoxRecv, &QGroupBox::toggled, this, [=](bool on){
         (on && (nullptr != socket)) ? recv() : stopRecv();
     });
-    connect(ui->sliderFrequency, &QSlider::valueChanged, this, [this](int seconds){
-        if(timer)
-            timer->start(1000* seconds);
+    connect(ui->sliderFrequency, &QSlider::valueChanged, this, [this](int val){
+        if(timer) {
+            int msec = (val >=0 && val < 4) ? qPow(10, val) : qAbs(val) * 1000;
+            timer->start(msec);
+        }
     });
 }
 
