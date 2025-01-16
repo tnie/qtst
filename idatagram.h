@@ -8,7 +8,7 @@ public:
     IDatagram();
     virtual ~IDatagram();
     virtual bool verify(QNetworkDatagram) const = 0;
-    virtual QString toString() const {}
+    virtual QString toString() const { return QString(); }
 
     QNetworkDatagram getDatagram() const;
     void setDatagram(QNetworkDatagram);
@@ -17,32 +17,36 @@ protected:
     QNetworkDatagram datagram;
 };
 
-#include <QTime>
+class Factory {
+    Factory() = default;
+    Factory(const Factory&) = delete;
+    Factory& operator=(const Factory&) = delete;
+    Factory(Factory&&) = delete;
+    Factory& operator=(Factory&&) = delete;
 
-class StDatagram : public IDatagram
-{
 public:
-    StDatagram() = default;
-    StDatagram(QHostAddress expectedSrc);
-    QTime getTime() const;
-    // IDatagram interface
-public:
-    bool verify(QNetworkDatagram) const override;
-    virtual QString toString() const override;
+    static Factory& get() {
+        static Factory instance;
+        return instance;
+    }
+    void insert(QString key, IDatagram*);
+    IDatagram *value(QString key) const;
+    QList<IDatagram*> values() const;
 
-    QHostAddress getExpectedSrc() const;
-    void setExpectedSrc(const QHostAddress &value);
+    template<typename T>
+    struct register_t
+    {
+        register_t(QString key)
+        {
+            Factory::get().insert(key, new T());
+        }
+    };
 
 private:
-    QHostAddress expectedSrc;
+    QMap<QString, IDatagram*> map_;
 };
 
-class PersonDatagram : public IDatagram
-{
-    // IDatagram interface
-public:
-    bool verify(QNetworkDatagram) const override;
-    virtual QString toString() const override;
-};
+#define REGISTER_IDATAGRAM_VNAME(T) reg_datagram_##T##_
+#define REGISTER_IDATAGRAM(T, key) static Factory::register_t<T> REGISTER_IDATAGRAM_VNAME(T)(key);
 
 #endif // IDATAGRAM_H

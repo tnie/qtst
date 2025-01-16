@@ -2,6 +2,7 @@
 #define EXAMPLE_H
 
 #include "navprotocol.h"
+#include "idatagram.h"
 
 // 报文结构体格式如下:
 // -----------------------
@@ -120,5 +121,13 @@ QByteArray student();
 QByteArray worker();
 QByteArray random();
 }
+
+class PersonDatagram : public IDatagram
+{
+    // IDatagram interface
+public:
+    bool verify(QNetworkDatagram) const override;
+    virtual QString toString() const override;
+};
 
 #endif // EXAMPLE_H

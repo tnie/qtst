@@ -232,29 +232,22 @@ void MainWindow::processTheDatagram(const QNetworkDatagram & datagram)
     stream << datagram.senderAddress().toString() << ":" << datagram.senderPort() << " => "
           << datagram.destinationAddress().toString() << ":" << datagram.destinationPort();
     ui->plainTextEditRecv->appendPlainText(text);
+    ui->plainTextEditRecv->appendPlainText(">> " + datagram.data().toHex(' '));
 
     dispatch(datagram);
 }
 
 void MainWindow::dispatch(QNetworkDatagram datagram)
 {
-    static QVector<IDatagram*> dd;
-    if(dd.isEmpty()) {
-        IDatagram *d1 = new StDatagram;
-        IDatagram *d2 = new PersonDatagram;
-        dd.append(d1);
-        dd.append(d2);
-    }
+    QList<IDatagram*> dd = Factory::get().values();
     for (int i = 0; i < dd.size(); ++i) {
         if(dd[i]->verify(datagram))
         {
             dd[i]->setDatagram(datagram);
             QString text = dd[i]->toString();
-            ui->plainTextEditRecv->appendHtml(">> " + datagram.data().toHex(' ') + " // " + text);
-            return;
+            ui->plainTextEditRecv->appendHtml(" // " + text);
         }
     }
-    ui->plainTextEditRecv->appendPlainText(">> " + datagram.data().toHex(' '));
 }
 
 void MainWindow::send()

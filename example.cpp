@@ -42,3 +42,34 @@ QString Student::toString() const {
     QString time = QDateTime::fromSecsSinceEpoch(timestamp()).time().toString();
     return QString("%1 score %2 time %3").arg(Person::toString()).arg(getScore()).arg(time);
 }
+
+QString PersonDatagram::toString() const
+{
+    Person person;
+    QByteArray bytes = datagram.data();
+    person.deserialize(bytes);
+    int age = person.getAge();
+    if(age < 20) {
+        Student student;
+        student.deserialize(datagram.data());
+        return student.toString();
+    }
+    else {
+        Worker worker;
+        worker.deserialize(datagram.data());
+        return worker.toString();
+    }
+    return person.toString();
+}
+
+bool PersonDatagram::verify(QNetworkDatagram datagram) const
+{
+    Person person;
+    QByteArray bytes = datagram.data();
+    person.deserialize(bytes);
+    int age = person.getAge();
+    return (age >=0 && age <= 120);
+}
+
+REGISTER_IDATAGRAM(PersonDatagram, "person")
+
