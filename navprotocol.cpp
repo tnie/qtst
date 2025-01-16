@@ -24,23 +24,6 @@ private:
     QString name_;  // 方便调试
 };
 
-/* NOTE int64_t 和 qint64 不是相同的类型 */
-template <> inline void qToBigEndian<int64_t>(int64_t src, void *dest) {
-    qToBigEndian<qint64>(src, dest);
-}
-
-template <> inline void qToBigEndian<uint64_t>(uint64_t src, void *dest) {
-    qToBigEndian<quint64>(src, dest);
-}
-
-template <> inline int64_t qFromBigEndian<int64_t>(const void *src) {
-    return qFromBigEndian<qint64>(src);
-}
-
-template <> inline uint64_t qFromBigEndian<uint64_t>(const void *src) {
-    return qFromBigEndian<quint64>(src);
-}
-
 template<typename T>
 class FieldImpl: public Field
 {
@@ -61,15 +44,34 @@ public:
          * 但如果终端使用 double 来表达数据，那丢失精度是无法避免的 */
         double value = var.toDouble();
         value *= factor_;
-        qToBigEndian<T>(value , bytes.data());
+        if constexpr (std::is_same_v<T, int64_t>) {
+            qToBigEndian<qint64>(value , bytes.data());
+        }
+        else if constexpr (std::is_same_v<T, uint64_t>) {
+            qToBigEndian<quint64>(value , bytes.data());
+        }
+        else {
+            qToBigEndian<T>(value , bytes.data());
+        }
         return bytes;
     }
     virtual QVariant deserialize(const QByteArray bytes) const override {
         if(bytes.size() < sizeof(T))
             return QVariant();
-        // 虽然 qFromBigEndian 手册中未提及 int8_t/uint8_t, 但实现是存在这两个类型的特例化的
         const void* src = static_cast<const void*>(bytes.data());
-        T value = qFromBigEndian<T>(src);
+        T value;
+        /* NOTE 在部分平台中（Linux + Qt5.13.2），int64_t 和 qint64 不是相同的类型
+         * 且 qToBigEndian() / qFromBigEndian() 使用的 qbswap() 未针对 int64_t / uint64_t 实例化 */
+        if constexpr (std::is_same_v<T, int64_t>) {
+            value = qFromBigEndian<qint64>(src);
+        }
+        else if constexpr (std::is_same_v<T, uint64_t>) {
+            value = qFromBigEndian<quint64>(src);
+        }
+        else {
+            // 虽然 qFromBigEndian 手册中未提及 int8_t/uint8_t, 但实现是存在这两个类型的特例化的
+            value = qFromBigEndian<T>(src);
+        }
         return (factor_ != 1.0) ? value / factor_ : value;
     }
     virtual unsigned serializedSize() const  override {
@@ -184,7 +186,8 @@ void NavData::setProtocol(QSharedPointer<const NavProtocol> ptr)
         if(!name.isEmpty()) {
             QMap<QString, int>::iterator it = name2idx_.find(name);
             if(it != name2idx_.end())
-                qWarning() << "There is already an item with the key:" << name;
+                qWarning() << __FUNCTION__ << ':' << __LINE__
+                           << "There is already an item with the key:" << name;
         }
         name2idx_.insert(name, i);
     }
